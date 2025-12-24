@@ -52,17 +52,21 @@ internal sealed class KeyboardController
 
     private uint SetKeyboardBackLightStatus(int level)
     {
-        var arguments = new object[] { level };
-        return (uint)_setKeyboardBackLightStatusInfo.Invoke(_keyboardControlInstance, arguments)!;
+        var argumentCount = _setKeyboardBackLightStatusInfo.GetParameters().Count();
+        var arguments = new object[argumentCount];
+        arguments[0] = level;
+        return (uint)_setKeyboardBackLightStatusInfo.Invoke(_keyboardControlInstance, arguments);
     }
 
     private uint GetKeyboardBackLightStatus(out int level)
     {
         level = -1;
-        var arguments = new object[] { level };
-        var result = (uint)_getKeyboardBackLightStatusInfo.Invoke(_keyboardControlInstance, arguments)!;
+        var argumentCount = _getKeyboardBackLightStatusInfo.GetParameters().Count();
+        var arguments = new object[argumentCount];
+        arguments[0] = level;
+        uint r = (uint)_getKeyboardBackLightStatusInfo.Invoke(_keyboardControlInstance, arguments);
         level = (int)arguments[0];
-        return result;
+        return r;
     }
 
     private static Assembly LoadAssembly(string dllName)
@@ -108,7 +112,7 @@ internal sealed class KeyboardController
         }
     }
 
-    private static Assembly? AssemblyResolve(object? sender, ResolveEventArgs args) // https://stackoverflow.com/a/15350751/397817
+    private static Assembly? AssemblyResolve(object? sender, ResolveEventArgs args)
     {
         return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.FullName == args.Name);
     }
