@@ -1,3 +1,5 @@
+# Forked to fix bugs and to migrate to LTS NET8 - Tested Working on W11 Pro
+
 # Lenovo files needed
 This utility requires the Lenovo files `Keyboard_Core.dll` and `Contract_Keyboard.dll` which are not included in this repository or software release for copyright reasons. If the program exits saying that one of these files is not found, locate the `ThinkKeyboardPlugin` folder on your computer - which should contain both files - and edit the following setting in the app.config:
 
