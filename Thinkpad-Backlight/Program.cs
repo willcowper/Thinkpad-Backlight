@@ -17,48 +17,44 @@ You should have received a copy of the GNU General Public License
 along with Thinkpad-Backlight.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.IO;
-using System.Windows.Forms;
+namespace Thinkpad_Backlight;
 
-namespace Thinkpad_Backlight
+static class Program
 {
-    static class Program
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    private static void Main()
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        private static void Main()
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) => HandleUnhandledException(args.ExceptionObject as Exception);
+        Application.ThreadException += (sender, args) => HandleUnhandledException(args.Exception);
+
+        ApplicationConfiguration.Initialize();
+
+        ApplicationContext context;
+        try
         {
-            AppDomain.CurrentDomain.UnhandledException += (sender, args) => HandleUnhandledException(args.ExceptionObject as Exception);
-            Application.ThreadException += (sender, args) => HandleUnhandledException(args.Exception);
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(defaultValue: false);
-
-            ApplicationContext context;
-            try
-            {
-                context = new ApplicationContext();
-            }
-            catch (FileNotFoundException)
-            {
-                Application.Exit();
-                return;
-            }
-
-            Application.Run(context);
+            context = new ApplicationContext();
         }
-
-        private static void HandleUnhandledException(Exception ex)
+        catch (FileNotFoundException)
         {
-            MessageBox.Show($@"There was an error and the program will now exit.
-
-Error message: {ex.Message}
-
-Stack trace: {ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Application.Exit();
+            return;
         }
+
+        Application.Run(context);
+    }
+
+    private static void HandleUnhandledException(Exception? ex)
+    {
+        MessageBox.Show($"""
+            There was an error and the program will now exit.
+
+            Error message: {ex?.Message}
+
+            Stack trace: {ex?.StackTrace}
+            """, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        Application.Exit();
     }
 }

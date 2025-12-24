@@ -17,65 +17,72 @@ You should have received a copy of the GNU General Public License
 along with Thinkpad-Backlight.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System.Windows.Forms;
 using Settings = Thinkpad_Backlight.Properties.Settings;
 
-namespace Thinkpad_Backlight
+namespace Thinkpad_Backlight;
+
+public sealed class ApplicationContext : System.Windows.Forms.ApplicationContext
 {
-    public class ApplicationContext : System.Windows.Forms.ApplicationContext
+    private NotifyIcon? _trayIcon;
+
+    public ApplicationContext()
     {
-        private NotifyIcon _trayIcon;
+        var keyboardController = new KeyboardController();
 
-        public ApplicationContext()
+        if (Settings.Default.EnableAtStartup)
+            keyboardController.ToggleBacklight(allowInTerminalServerSession: false);
+
+        var brightMenuItem = new ToolStripMenuItem("On: Bright");
+        var dimMenuItem = new ToolStripMenuItem("On: Dim");
+        var offMenuItem = new ToolStripMenuItem("Off");
+        var timerMenuItem = new ToolStripMenuItem("Timer") { Checked = Settings.Default.Timer };
+        var keypressMenuItem = new ToolStripMenuItem("Monitor key presses") { Checked = Settings.Default.MonitorKeys };
+        var settingsMenuItem = new ToolStripMenuItem("Settings");
+        var exitMenuItem = new ToolStripMenuItem("Exit");
+
+        offMenuItem.Click += (_, _) => keyboardController.ToggleBacklight(KeyboardBrightness.Off, allowInTerminalServerSession: true);
+        exitMenuItem.Click += (_, _) => Application.Exit();
+
+        _trayIcon = new NotifyIcon
         {
-            var keyboardController = new KeyboardController();
-
-            if (Settings.Default.EnableAtStartup)
-                keyboardController.ToggleBacklight(allowInTerminalServerSession: false);
-
-            var brightMenuItem = new MenuItem("On: Bright");
-            var dimMenuItem = new MenuItem("On: Dim");
-            var timerMenuItem = new MenuItem("Timer") { Checked = Settings.Default.Timer };
-            var keypressMenuItem = new MenuItem("Monitor key presses") { Checked = Settings.Default.MonitorKeys };
-            var settingsMenuItem = new MenuItem(text: "Settings") /* { BarBreak = true }*/;
-
-            _trayIcon = new NotifyIcon
+            Icon = Properties.Resources.TrayIcon,
+            ContextMenuStrip = new ContextMenuStrip
             {
-                Icon = Properties.Resources.TrayIcon,
-                ContextMenu = new ContextMenu(menuItems: new[]
+                Items =
                 {
                     brightMenuItem,
                     dimMenuItem,
-                    new MenuItem(text: "Off", onClick: (_, __) => keyboardController.ToggleBacklight(KeyboardBrightness.Off, allowInTerminalServerSession: true)),
+                    offMenuItem,
+                    new ToolStripSeparator(),
                     timerMenuItem,
                     keypressMenuItem,
-                    new MenuItem("-"), // or use BarBreak instead, on the next item, to seperate vertically
+                    new ToolStripSeparator(),
                     settingsMenuItem,
-                    new MenuItem(text: "Exit", onClick: (_, __) => Application.Exit())
-                }),
-                Visible = false,
-                Text = "Thinkpad Backlight"
-            };
+                    exitMenuItem
+                }
+            },
+            Visible = false,
+            Text = "Thinkpad Backlight"
+        };
 
-            var configWindow = new Form1(brightMenuItem, dimMenuItem, timerMenuItem, keypressMenuItem, keyboardController);
+        var configWindow = new Form1(brightMenuItem, dimMenuItem, timerMenuItem, keypressMenuItem, keyboardController);
 
-            _trayIcon.DoubleClick += configWindow.ShowConfig;
-            settingsMenuItem.Click += configWindow.ShowConfig;
-            _trayIcon.Visible = true;
-        }
+        _trayIcon.DoubleClick += configWindow.ShowConfig;
+        settingsMenuItem.Click += configWindow.ShowConfig;
+        _trayIcon.Visible = true;
+    }
 
-        /// <summary>Releases the unmanaged resources used by the <see cref="T:System.Windows.Forms.ApplicationContext" /> and optionally releases the managed resources.</summary>
-        /// <param name="disposing">
-        /// <see langword="true" /> to release both managed and unmanaged resources; <see langword="false" /> to release only unmanaged resources.</param>
-        protected override void Dispose(bool disposing)
+    /// <summary>Releases the unmanaged resources used by the <see cref="T:System.Windows.Forms.ApplicationContext" /> and optionally releases the managed resources.</summary>
+    /// <param name="disposing">
+    /// <see langword="true" /> to release both managed and unmanaged resources; <see langword="false" /> to release only unmanaged resources.</param>
+    protected override void Dispose(bool disposing)
+    {
+        if (_trayIcon != null)
         {
-            if (_trayIcon != null)
-            {
-                _trayIcon.Dispose();
-                _trayIcon = null;
-            }
-
-            base.Dispose(disposing: disposing);
+            _trayIcon.Dispose();
+            _trayIcon = null;
         }
+
+        base.Dispose(disposing);
     }
 }

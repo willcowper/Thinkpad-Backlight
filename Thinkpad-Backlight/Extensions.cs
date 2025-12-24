@@ -17,41 +17,34 @@ You should have received a copy of the GNU General Public License
 along with Thinkpad-Backlight.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-using System;
-using System.Linq;
 using System.Reflection;
-using Thinkpad_Backlight.Properties;
+using Settings = Thinkpad_Backlight.Properties.Settings;
 
-namespace Thinkpad_Backlight
+namespace Thinkpad_Backlight;
+
+public static class Extensions
 {
-    public static class Extensions
+    public static void Reset(this System.Windows.Forms.Timer timer)
     {
-        public static void Reset(this System.Windows.Forms.Timer timer)
+        ArgumentNullException.ThrowIfNull(timer);
+
+        if (Settings.Default.Timer)
         {
-            if (timer == null)
-                throw new ArgumentNullException(nameof(timer));
-
-            if (Settings.Default.Timer)
-            {
-                timer.Stop();
-                timer.Start();
-            }
+            timer.Stop();
+            timer.Start();
         }
+    }
 
-        public static MethodInfo GetRuntimeMethodsExt(this Type type, string name, params Type[] types)
-        {
-            // https://stackoverflow.com/a/21308619/397817
-            // Find potential methods with the correct name and the right number of parameters
-            // and parameter names
-            var potentials = (from ele in type.GetMethods()
-                where ele.Name.Equals(name)
-                //let param = ele.GetParameters()
-                //where param.Length == types.Length
-                //&& param.Select(p => p.ParameterType.Name).SequenceEqual(types.Select(t => t.Name))
-                select ele);
+    public static MethodInfo? GetRuntimeMethodsExt(this Type type, string name, params Type[] types)
+    {
+        // https://stackoverflow.com/a/21308619/397817
+        // Find potential methods with the correct name and the right number of parameters
+        // and parameter names
+        var potentials = from ele in type.GetMethods()
+                         where ele.Name.Equals(name, StringComparison.Ordinal)
+                         select ele;
 
-            // Maybe check if we have more than 1? Or not?
-            return potentials.FirstOrDefault();
-        }
+        // Maybe check if we have more than 1? Or not?
+        return potentials.FirstOrDefault();
     }
 }

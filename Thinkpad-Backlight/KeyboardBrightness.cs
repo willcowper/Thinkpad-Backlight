@@ -17,12 +17,11 @@ You should have received a copy of the GNU General Public License
 along with Thinkpad-Backlight.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-namespace Thinkpad_Backlight
+namespace Thinkpad_Backlight;
+
+public enum KeyboardBrightness
 {
-    public enum KeyboardBrightness
-    {
-        Off,
-        Dim,
-        Bright
-    }
+    Off,
+    Dim,
+    Bright
 }
